@@ -25,8 +25,12 @@ Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 
 " Themes.
+Plug 'chriskempson/base16-vim'
 Plug 'nanotech/jellybeans.vim'
 Plug 'ajh17/spacegray.vim'
+Plug 'rakr/vim-one'
+Plug 'w0ng/vim-hybrid'
+Plug 'whatyouhide/vim-gotham'
 
 " Surround selection.
 Plug 'tpope/vim-surround'
@@ -39,7 +43,10 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'airblade/vim-gitgutter'
 
 " Tagbar.
-Plug 'majutsushi/tagbar'
+" Plug 'majutsushi/tagbar'
+
+" Linting
+Plug 'vim-syntastic/syntastic'
 
 " Comments.
 Plug 'scrooloose/nerdcommenter'
@@ -47,11 +54,21 @@ Plug 'scrooloose/nerdcommenter'
 " Auto pairs.
 Plug 'jiangmiao/auto-pairs'
 
+" Super tab.
+Plug 'ervandew/supertab'
+
 " File explorer.
-Plug 'tpope/vim-vinegar'
+Plug 'scrooloose/nerdtree'
+
+" Easy alignment for = with <leader-a>
+Plug 'junegunn/vim-easy-align'
 
 " Git integration.
 Plug 'tpope/vim-fugitive'
+Plug 'cohama/agit.vim'
+
+" No distractions
+Plug 'junegunn/goyo.vim'
 
 call plug#end()
 
@@ -68,11 +85,19 @@ set backspace=indent,eol,start
 " Switch syntax highlighting on.
 syntax on
 
+" No swap and backups, please
+set noswapfile
+set nowritebackup
+set nobackup
+
 " Default tab settings.
 set tabstop=2
 set expandtab
 set shiftwidth=2
 set shiftround
+
+" Block selection
+set virtualedit=block
 
 " Undo history.
 set undofile
@@ -85,7 +110,7 @@ set undoreload=10000
 
 " Easier command mode key.
 nnoremap ; :
-nnoremap : ;
+nnoremap : :<Up><Cr>
 
 " Set leaders
 let mapleader = " "
@@ -112,8 +137,8 @@ nnoremap <D-P> :set spell!<Cr>
 " Turbo navigation.
 nnoremap H b
 nnoremap I w
-nnoremap N }
-nnoremap E {
+xnoremap N }
+xnoremap E {
 
 nnoremap ´ <C-e>
 nnoremap ˜ <C-y>
@@ -129,6 +154,12 @@ nnoremap <C-D-=> :resize +5<CR>
 nnoremap <C-D--> :resize -5<CR>
 nnoremap <M-C-D-=> :vertical resize +5<CR>
 nnoremap <M-C-D--> :vertical resize -5<CR>
+
+" Jump to the last edited file
+nnoremap <leader><leader> <C-^>
+
+" Don't yank on paste
+xnoremap v "_dP
 
 
 " === Editing ===
@@ -183,8 +214,9 @@ set splitright
 
 " === UI ===
 
-colorscheme spacegray
-set guifont=Fira\ Code:h11
+colorscheme hybrid
+set guifont=PragmataPro:h11
+" let g:one_allow_italics = 1
 set linespace=1
 
 " No redraw on macros, registers.
@@ -212,6 +244,9 @@ set updatetime=100
 
 " Don't show mode in cmdline.
 set noshowmode
+
+" Hide ~
+highlight NonText ctermfg=bg guifg=bg
 
 if !has('gui_running')
   set t_Co=256
@@ -244,9 +279,10 @@ vmap * <Plug>VSurround*
 
 
 " Airline.
-let g:airline_powerline_fonts = 0
+let g:airline_powerline_fonts = 1
 let g:airline_skip_empty_sections = 1
-let g:airline#extensions#tabline#enabled = 0
+let g:airline#extensions#tabline#enabled = 1
+let g:airline_theme='base16_default'
 
 " Fzf.
 let g:fzf_action = {
@@ -254,19 +290,31 @@ let g:fzf_action = {
   \ 'ctrl-s': 'split',
   \ 'ctrl-v': 'vsplit' }
 
-let g:fzf_layout = { 'down': '~20%' }
-autocmd! FileType fzf
-autocmd  FileType fzf set laststatus=0 noshowmode noruler
-  \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+let g:fzf_buffers_jump = 0
+let $FZF_DEFAULT_OPTS = "--reverse"
+let g:fzf_layout = { 'window': 'vertical enew' }
+
+
+" inoremap <expr> <c-x><c-s> fzf#complete({
+"   \ 'source':  'cat /usr/share/dict/words',
+"   \ 'reducer': function('<sid>make_sentence'),
+"   \ 'options': '--multi --reverse --margin 15%,0',
+"   \ 'left':    20})
+
+" autocmd! FileType fzf
+" autocmd  FileType fzf set laststatus=0 noshowmode noruler
+"   \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
 
 " GitGutter.
 let g:gitgutter_map_keys = 0
-nmap ]h <Plug>GitGutterNextHunk
-nmap [h <Plug>GitGutterPrevHunk
+nnoremap ]h :GitGutterNextHunk<Cr>
+nnoremap [h :GitGutterPrevHunk<Cr>
+autocmd BufWritePost * GitGutter
 
-" Tagbar.
-let g:tagbar_width = 30
-let g:tagbar_compact = 1
+
+" Tagbar (disabled).
+" let g:tagbar_width = 30
+" let g:tagbar_compact = 1
 
 " Theme.
 let g:spacegray_underline_search = 1
@@ -283,12 +331,43 @@ let g:NERDDefaultNesting = 1
 let g:NERDAllowAnyVisualDelims = 1
 nnoremap <leader>ci :call NERDComment('n', 'insert')<Cr>
 
+" NERDTree.
+nnoremap <D-e> :NERDTreeToggle<CR>
+nnoremap <D-E> :NERDTreeFind<CR>
+let g:NERDTreeDirArrowExpandable = '+'
+let g:NERDTreeDirArrowCollapsible = '-'
+let NERDTreeMinimalUI=1
+let g:NERDTreeMapOpenSplit = "I"
+let g:NERDTreeMapOpenExpl = "E"
+let NERDTreeIgnore = ['^_.*']
+
+" Linting.
+let g:syntastic_check_on_open = 1
+let g:syntastic_always_populate_loc_list=1
+let g:syntastic_loc_list_height=15
+let g:syntastic_enable_signs=1
+let g:syntastic_warning_symbol="•"
+let g:syntastic_error_symbol="*"
+let g:syntastic_ocaml_checkers=['merlin']
+
+highlight SyntasticWarningSign guifg=#cc6666
+highlight SyntasticWarning gui=undercurl guisp=#cc6666
+
+" Supertab.
+let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
+
+" EasyAlign
+
+" Easy alignment for = with <leader-a>
+vnoremap <leader>a <Plug>(EasyAlign)
+
 
 " === Languages ===
 
 " OCaml
 autocmd FileType ocaml hi EnclosingExpr ctermbg=17 guibg=#223344
-autocmd FileType ocaml nmap <buffer> <C-c> :MerlinClearEnclosing<CR>:noh<CR>
+autocmd FileType ocaml nnoremap <silent><C-c> :nohlsearch<return>:MerlinClearEnclosing<return><esc>
+
 autocmd Filetype ocaml let g:AutoPairs = {'(': ')', '[': ']', '{': '}', '"': '"'}
 let g:NERDCustomDelimiters = { 'ocaml': { 'left': '(*','right': '*)' } }
 
