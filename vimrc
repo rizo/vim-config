@@ -44,6 +44,20 @@ Plug 'vim-scripts/Wombat'
 
 " Languages.
 Plug 'rgrinberg/vim-ocaml'
+Plug 'zchee/deoplete-go', { 'do': 'make'}
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+
+
+" Reason
+Plug 'reasonml-editor/vim-reason-plus', { 'for': 'reason' }
+Plug 'autozimu/LanguageClient-neovim', {
+    \ 'for': 'reason',
+    \ 'branch': 'next',
+    \ 'do': 'bash install.sh',
+    \ }
+let g:LanguageClient_serverCommands = {
+    \ 'reason': ['/Users/rizo/.local/bin/reason-language-server.exe'],
+    \ }
 
 " Surround selection.
 Plug 'tpope/vim-surround'
@@ -55,8 +69,9 @@ Plug 'cohama/agit.vim'
 " Faster match.
 Plug 'itchyny/vim-parenmatch'
 
-" Git gutter.
-Plug 'airblade/vim-gitgutter'
+" Git signs.
+" Plug 'airblade/vim-gitgutter'
+Plug 'mhinz/vim-signify'
 
 " Linting
 " Plug 'vim-syntastic/syntastic'
@@ -154,7 +169,7 @@ set undolevels=1000
 set undoreload=10000
 
 " Use systems clipboard.
-set clipboard=unnamed
+set clipboard=unnamed,unnamedplus
 
 
 
@@ -192,8 +207,8 @@ noremap <silent> N @='5gj'<CR>
 noremap <silent> E @='5gk'<CR>
 
 " Navigate between marks.
-nnoremap “ <C-o>
-nnoremap ‘ <C-i>
+nnoremap <M-[> <C-o>
+nnoremap <M-]> <C-i>
 
 " Command line
 cmap <C-a> <Home>
@@ -219,10 +234,7 @@ nnoremap <M-C-D--> :vertical resize -5<CR>
 
 
 " Jump to the last edited file
-nnoremap  <leader><leader> <C-^>
-
-" Don't yank on paste
-vnoremap v "_dP
+nnoremap  <leader><leader> :e .<Cr>
 
 " Go to definition in a split.
 nnoremap <leader>gd <C-w>sgd
@@ -307,7 +319,8 @@ set noshowcmd
 
 let synmaxcol=80
 " set guifont=Fira\ Code:h12
-set guifont=Fura\ Code\ Retina\ Nerd\ Font\ Complete:h11
+" set guifont=Fura\ Code\ Retina\ Nerd\ Font\ Complete:h11
+set guifont=Pragmata\ Pro:h13
 set linespace=1
 
 " No redraw on macros, registers.
@@ -450,20 +463,41 @@ nnoremap <C-p> :FZF<Cr>
 
 " ## GitGutter
 
-let g:gitgutter_map_keys = 0
-let g:gitgutter_realtime = 0
-let g:gitgutter_eager = 0
-let g:gitgutter_sign_added = '│'
-let g:gitgutter_sign_modified = '│'
-let g:gitgutter_sign_removed = '│'
-let g:gitgutter_sign_removed_first_line = '│'
-let g:gitgutter_sign_modified_removed = '│'
-highlight GitGutterDelete guifg=#CC6666
-highlight GitGutterChangeDelete guifg=#DE935F
-nnoremap ]h :GitGutterNextHunk<Cr>
-nnoremap [h :GitGutterPrevHunk<Cr>
-autocmd BufWritePost * GitGutter
-set signcolumn="yes"
+" let g:gitgutter_map_keys = 0
+" let g:gitgutter_realtime = 0
+" let g:gitgutter_eager = 0
+" let g:gitgutter_sign_added = '▕▏'
+" let g:gitgutter_sign_modified = '▕▏'
+" let g:gitgutter_sign_removed = '▕▏'
+" let g:gitgutter_sign_removed_first_line = '▕▏'
+" let g:gitgutter_sign_modified_removed = '▕▏'
+" " let g:gitgutter_sign_removed_first_line = '┃'
+" highlight GitGutterDelete guifg=#CC6666
+" highlight GitGutterChangeDelete guifg=#DE935F
+" nnoremap ]h :GitGutterNextHunk<Cr>
+" nnoremap [h :GitGutterPrevHunk<Cr>
+" autocmd BufWritePost * GitGutter
+" set signcolumn="yes"
+
+" ## Signify
+
+let g:signify_vcs_list               = ['git']
+let g:signify_sign_add               = '▕▏'
+let g:signify_sign_delete            = '▕▏'
+let g:signify_sign_delete_first_line = '▕▏'
+let g:signify_sign_change            = '▕▏'
+let g:signify_sign_changedelete      = g:signify_sign_change
+let g:signify_update_on_focusgained  = 1
+let g:signify_line_highlight         = 0
+let g:signify_sign_show_count        = 0
+
+highlight clear SignColumn
+highlight SignifySignAdd guifg=#5F875F
+highlight SignifySignChange guifg=#de935f
+highlight SignifySignDelete guifg=#cc6666
+
+
+" DiffAdd        xxx ctermfg=193 ctermbg=65 guifg=#d7ffaf guibg=#5F875F
 
 
 " Tagbar (disabled).
@@ -534,7 +568,7 @@ nnoremap <D-E> :NERDTreeFind<CR><C-w>p
 " ## Lightline
 
 function! LightlineReadonly()
-  return &readonly ? '' : ''
+  return &readonly ? ' ' : ''
 endfunction
 
 function! LightlineFugitive()
@@ -560,8 +594,8 @@ let g:lightline = {
       \   'active': [ 'filename', 'modified' ],
       \   'inactive': [ 'filename', 'modified' ]
       \  },
-      \ 'separator': { 'left': '', 'right': '' },
-      \ 'subseparator': { 'left': '|', 'right': '|' },
+      \ 'separator': { 'left': '', 'right': '' },
+      \ 'subseparator': { 'left': '', 'right': '' },
       \ 'component_function': {
       \   'readonly': 'LightlineReadonly',
       \   'gitbranch': 'LightlineFugitive'
@@ -583,8 +617,8 @@ let g:lightline.component_type = {
       \ }
 
 let g:lightline#ale#indicator_checking = "\uf110 "
-let g:lightline#ale#indicator_warnings = "\uf071 "
-let g:lightline#ale#indicator_errors = "\uf05e "
+let g:lightline#ale#indicator_warnings = " "
+let g:lightline#ale#indicator_errors = " "
 let g:lightline#ale#indicator_ok = "\uf00c "
 
 let s:palette = g:lightline#colorscheme#wombat#palette
@@ -595,15 +629,15 @@ unlet s:palette
 
 " ## ALE
 
-let g:ale_sign_error = '╳'
-let g:ale_sign_warning = '╳'
+let g:ale_sign_error = ' '
+let g:ale_sign_warning = ' '
 let g:ale_max_signs = -1
 let g:ale_echo_delay = 100
 highlight ALEErrorSign ctermfg=167 guifg=#cc6666
 highlight ALEWarningSign ctermfg=167 guifg=#f0c674
 " highlight ALEError term=undercurl cterm=undercurl ctermfg=167 ctermbg=52 gui=undercurl guisp=#cc6666
-highlight ALEError cterm=underline ctermfg=167 ctermbg=52 gui=underline guisp=#5f0000
-highlight ALEWarning term=undercurl cterm=undercurl ctermfg=167 ctermbg=52 gui=undercurl guisp=#f0c674
+highlight ALEError guibg=#411B1E
+highlight ALEWarning guibg=#2A2928
 
 nnoremap <silent> [e <Plug>(ale_previous_wrap)
 nnoremap <silent> ]e <Plug>(ale_next_wrap)
@@ -627,9 +661,9 @@ let g:webdevicons_enable_nerdtree = 1
 let g:WebDevIconsUnicodeDecorateFolderNodes = 1
 let g:DevIconsEnableFoldersOpenClose = 1
 let g:WebDevIconsNerdTreeBeforeGlyphPadding = ''
-let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
+let g:WebDevIconsNerdTreeAfterGlyphPadding = '  '
 let g:webdevicons_conceal_nerdtree_brackets = 1
-let g:WebDevIconsUnicodeGlyphDoubleWidth = 0
+" let g:WebDevIconsUnicodeGlyphDoubleWidth = 0
 let g:WebDevIconsNerdTreeGitPluginForceVAlign = 1
 
 
@@ -646,12 +680,12 @@ let g:NERDCustomDelimiters = { 'ocaml': { 'left': '(*','right': '*)' },
 " Merlin
 let no_ocaml_maps = 0
 let g:merlin_disable_default_keybindings = 1
-noremap  <Leader>t :MerlinTypeOf<return>
-noremap  <Leader>n :MerlinGrowEnclosing<return>
-noremap  <Leader>p :MerlinShrinkEnclosing<return>
-vnoremap <Leader>t :MerlinTypeOfSel<return>
-nnoremap <silent>gd  :MerlinLocate<return>
-"vmap <silent><buffer> <TAB>         :<C-u>MerlinPhrase<return>
+autocmd Filetype ocaml noremap  <Leader>t :MerlinTypeOf<return>
+autocmd Filetype ocaml noremap  <Leader>n :MerlinGrowEnclosing<return>
+autocmd Filetype ocaml noremap  <Leader>p :MerlinShrinkEnclosing<return>
+autocmd Filetype ocaml vnoremap <Leader>t :MerlinTypeOfSel<return>
+autocmd Filetype ocaml nnoremap <silent>gd  :MerlinLocate<return>
+autocmd Filetype ocaml vmap <silent><buffer> <TAB>         :<C-u>MerlinPhrase<return>
 
 
 " ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
@@ -686,3 +720,9 @@ for tool in s:opam_packages
   endif
 endfor
 " ## end of OPAM user-setup addition for vim / base ## keep this line
+
+
+" ???
+
+" Don't yank on paste
+vnoremap v "_dP
