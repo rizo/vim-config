@@ -44,8 +44,8 @@ Plug 'vim-scripts/Wombat'
 
 " Languages.
 Plug 'rgrinberg/vim-ocaml'
-Plug 'zchee/deoplete-go', { 'do': 'make'}
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+"Plug 'zchee/deoplete-go', { 'do': 'make'}
+"Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 
 " Reason
@@ -145,9 +145,6 @@ set encoding=utf-8
 " Make backspace behave in a sane manner.
 set backspace=indent,eol,start
 
-" Switch syntax highlighting on.
-syntax on
-
 " No swap and backups, please
 set noswapfile
 set nowritebackup
@@ -191,8 +188,8 @@ vmap <D-]> >gv
 vmap <D-[> <gv
 
 " Tab navigation.
-nnoremap <M-{>  :tabprev<Cr>
-nnoremap <M-}>  :tabnext<Cr>
+nnoremap <C-]>  :tabprev<Cr>
+nnoremap <C-[>  :tabnext<Cr>
 
 " Indent in insert mode.
 inoremap <D-]> <c-t>
@@ -306,12 +303,17 @@ set completeopt=longest,menuone
 
 " Theme options.
 set t_Co=256                    " Enable 256 color terminal
+set termguicolors             " Enable true color
 if has('termguicolors')
 	set termguicolors             " Enable true color
 endif
+let base16colorspace=256
 
 set background=dark
 colorscheme hybrid
+
+" Switch syntax highlighting on.
+syntax on
 
 
 " Don't show commands.
@@ -529,8 +531,8 @@ vnoremap <C-/> <Esc>:call NERDComment('v', 'toggle')<CR>
 
 " ## NERDTree
 let NERDTreeHijackNetrw=1
-let NERDTreeDirArrowExpandable = " "
-let NERDTreeDirArrowCollapsible = " "
+" let NERDTreeDirArrowExpandable = " "
+" let NERDTreeDirArrowCollapsible = " "
 let NERDTreeMinimalUI=1
 let g:NERDTreeMapOpenSplit = "I"
 let g:NERDTreeMapOpenExpl = "E"
@@ -538,6 +540,7 @@ let NERDTreeIgnore = ['^_.*']
 let g:NERDTreeWinSize=27
 let g:NERDTreeStatusline = ""
 let g:NERDTreeStatusline = '%#NonText#'
+" let NERDTreeDirArrows=0
 
 augroup nerdtreehidecwd
 	autocmd!
@@ -688,41 +691,14 @@ autocmd Filetype ocaml nnoremap <silent>gd  :MerlinLocate<return>
 autocmd Filetype ocaml vmap <silent><buffer> <TAB>         :<C-u>MerlinPhrase<return>
 
 
-" ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
-let s:opam_share_dir = system("opam config var share")
-let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')
-
-let s:opam_configuration = {}
-
-function! OpamConfOcpIndent()
-  execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
-endfunction
-let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
-
-function! OpamConfOcpIndex()
-  execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
-endfunction
-let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
-
-function! OpamConfMerlin()
-  let l:dir = s:opam_share_dir . "/merlin/vim"
-  execute "set rtp+=" . l:dir
-endfunction
-let s:opam_configuration['merlin'] = function('OpamConfMerlin')
-
-let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
-let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
-let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
-for tool in s:opam_packages
-  " Respect package order (merlin should be after ocp-index)
-  if count(s:opam_available_tools, tool) > 0
-    call s:opam_configuration[tool]()
-  endif
-endfor
-" ## end of OPAM user-setup addition for vim / base ## keep this line
-
-
 " ???
 
 " Don't yank on paste
 vnoremap v "_dP
+
+
+" OCaml
+set rtp+=/home/rizo/.opam/default/share/ocp-indent/vim
+set rtp+=/home/rizo/.opam/default/share/ocp-index/vim
+set rtp+=/home/rizo/.opam/default/share/merlin/vim
+
